@@ -23,7 +23,7 @@ class gH_filter:
 		self.dt=dt
 		self.results=self.filter(self.data,self.x0,self.dx,self.g,self.h,self.dt)
 		if plot:
-			self.plot_results(self.data,self.results,self.x0)
+			self.plotResults(self.data,self.results,self.x0)
 
 	def filter(self,data,x0,dx,g,h,dt):
 		results=[]
@@ -41,10 +41,10 @@ class gH_filter:
 		return np.array(results)
 
 	def toString(self):
-		print(self.results)
+		print(f'final estimates are \n{np.array(self.results)}')
 
 
-	def plot_results(self,data,ests,x0):
+	def plotResults(self,data,ests,x0):
 		if type(data)==list:
 			size=len(self.data)
 		elif type(data)==np.ndarray:
@@ -52,8 +52,9 @@ class gH_filter:
 		x=np.linspace(1,size,size)
 		y=np.linspace(x0,ests[-1],size)
 		plt.scatter(x,data,label='Measurements')
-		plt.plot(x,ests,'r-o',label='Estimates')
-		plt.plot(x,y,'k--',label='Actual')
+		plt.plot(x,ests,'r-',label='Estimate')
+		#plt.plot(x,y,'k--',label='Actual')
 		plt.grid()
-		plt.legend(('Estimates','Actual','Measurements'),loc=4)
+		plt.title('GH Filter')
+		plt.legend(loc=4)
 		plt.show()
