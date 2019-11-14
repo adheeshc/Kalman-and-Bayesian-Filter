@@ -21,11 +21,11 @@ class gH_filter:
 		self.g=g
 		self.h=h
 		self.dt=dt
-		self.results=self.filter(self.data,self.x0,self.dx,self.g,self.h,self.dt)
+		self.results=self.filter()
 		if plot:
-			self.plotResults(self.data,self.results,self.x0)
+			self.plotResults()
 
-	def filter(self,data,x0,dx,g,h,dt):
+	def filter(self):
 		results=[]
 		x_est=self.x0
 		for z in self.data:
@@ -44,15 +44,15 @@ class gH_filter:
 		print(f'final estimates are \n{np.array(self.results)}')
 
 
-	def plotResults(self,data,ests,x0):
-		if type(data)==list:
+	def plotResults(self):
+		if type(self.data)==list:
 			size=len(self.data)
-		elif type(data)==np.ndarray:
-			size=data.shape[0]
+		elif type(self.data)==np.ndarray:
+			size=self.data.shape[0]
 		x=np.linspace(1,size,size)
-		y=np.linspace(x0,ests[-1],size)
-		plt.scatter(x,data,label='Measurements')
-		plt.plot(x,ests,'r-',label='Estimate')
+		y=np.linspace(self.x0,self.results[-1],size)
+		plt.scatter(x,self.data,label='Measurements')
+		plt.plot(x,self.results,'r-',label='Estimate')
 		#plt.plot(x,y,'k--',label='Actual')
 		plt.grid()
 		plt.title('GH Filter')
