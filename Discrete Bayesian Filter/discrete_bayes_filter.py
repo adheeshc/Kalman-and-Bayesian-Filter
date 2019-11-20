@@ -12,8 +12,8 @@ class Discrete_Bayes_Filter():
 
 	'prior' is initial belief of the state variable
 	'kernel' is the kernel used
-	'measurements' is the position moved at time t
-	'offset' is the distance moved by the state variable
+	'measurements' is the position moved to on the scale at time t
+	'offset' is an integer specifying how much we want to move to the right (negative values means move to the left)
 	'sensor_accuracy' is the accuracy of the sensor
 	'scale' is the original track on which the state variable is evaluated
 	
