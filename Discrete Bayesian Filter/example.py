@@ -54,6 +54,7 @@ def train_filter(iterations, kernel, sensor_accuracy, offset, do_print=True):
 	dbf=Discrete_Bayes_Filter(prior,kernel,measurements,offset,sensor_accuracy,scale,doPrint=True)
 	for i in range(iterations):
 		dbf.plotPosterior(i)
+	#dbf.Algorithm()
 
 if __name__=="__main__":
 	train_filter(4,kernel=[.1, .8, .1], sensor_accuracy=.9,offset=4, do_print=True)
