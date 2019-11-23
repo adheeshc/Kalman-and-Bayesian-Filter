@@ -58,3 +58,22 @@ class gH_filter:
 		plt.title('GH Filter')
 		plt.legend(loc=4)
 		plt.show()
+
+	def Algorithm(self):
+		print(f"""
+		Initialization
+
+		1. Initialize the state of the filter
+		2. Initialize our belief in the state
+
+		Predict
+
+		1. Use system behavior to predict state at the next time step
+		2. Adjust belief to account for the uncertainty in prediction
+
+		Update
+
+		1. Get a measurement and associated belief about its accuracy
+		2. Compute residual between estimated state and measurement
+		3. New estimate is somewhere on the residual line
+		""")

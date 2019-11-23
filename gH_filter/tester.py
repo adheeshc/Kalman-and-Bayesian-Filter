@@ -56,5 +56,6 @@ def main():
 	accel_data = accData(x0=10., dx=0., count=20, noise_factor=0, accel=2.)
 	gh_accel=gH_filter(accel_data,x0,dx,g,h,dt,plot=True)
 
+	#gh.Algorithm()
 if __name__=="__main__":
 	main()
