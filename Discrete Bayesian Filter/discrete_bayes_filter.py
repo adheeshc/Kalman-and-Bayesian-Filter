@@ -99,3 +99,21 @@ class Discrete_Bayes_Filter():
 		self.barPlot(self.posteriors[i],ylim=(0,1.0))
 		plt.axvline(self.measurements[i], lw=5) 
 		plt.show()
+
+	def Algorithm(self):
+		print(f"""
+		Initialization
+
+		1. Initialize our belief in the state
+
+		Predict
+
+		1. Based on the system behavior, predict state for the next time step
+		2. Adjust belief to account for the uncertainty in prediction
+
+		Update
+
+		1. Get a measurement and associated belief about its accuracy
+		2. Compute how likely it is the measurement matches each state
+		3. Update state belief with this likelihood
+		""")
