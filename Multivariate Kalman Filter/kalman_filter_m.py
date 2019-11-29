@@ -18,22 +18,26 @@ class Gaussian:
 
 class Kalman_Filter_multi():
 	"""
+	'state_variables' are the means and variances of the state variables
+	'dt' is the timestep
+	'process_var' is the variance in the state variable
+	'sensor_var' is the variance in the sensor readings
+	'measurements' is the final value of the state variable after timestep dt
+	'pos' is the true value of the state variable (without sensor var)
 
 	"""
-	def __init__(self,state_var,dt,process_var,sensor_var,measurements,pos):
+	def __init__(self,state_variables,dt,process_var,sensor_var,measurements,pos):
 		
-		self.input=state_var #state variable
-		self.dim_x=len(self.input.mean()) #size of the state vector 
-
-		self.x = np.array([self.input.mean()[0],self.input.mean()[1]]).T
-		#self.x = [i.mean() for i in self.input].T
-		self.P=np.diag([self.input.variance()[0],self.input.variance()[1]])
-		#self.P = [i.variance() for i in self.input].T
-
+		self.state_variables=state_variables #state variable
+		self.dim_x=len(self.state_variables.mean()) #size of the state vector 
+		
+		self.x = np.array([i for i in self.state_variables.mean()]).T
+		self.P = np.diag(self.state_variables.variance())
+		
 
 		self.dt=dt #time step in sec
-		self.F=np.array([[1, dt],[0, 1]]) #state transition function
-		self.H=np.array([[1., 0.]]) #measurement function
+		self.F=np.array([[1, dt],[0, 1]]) #state transition function (NEEDS T0 BE CHANGED AS REQD)
+		self.H=np.array([[1., 0.]]) #measurement function (NEEDS T0 BE CHANGED AS REQD)
 		
 		self.Q=process_var # process covariance (noise)
 		self.R=sensor_var # measurement covariance.
@@ -41,7 +45,6 @@ class Kalman_Filter_multi():
 		self.measurements=measurements
 		self.pos=pos
 
-		self.doPrint=True
 		self.xs,self.covs=self.filter()
 
 
@@ -68,8 +71,10 @@ class Kalman_Filter_multi():
 			
 			#Update
 			self.update(z)
+			
 			xs.append(self.x)
 			covs.append(self.P)
+
 		return np.array(xs),np.array(covs)
 
 	def toString(self):
@@ -82,7 +87,6 @@ class Kalman_Filter_multi():
 		plt.figure(1)
 		self.plotMeasurements(self.measurements)
 		self.plotFilter()
-		#self.plotPredictions(self.priors)
 		plt.title('Multivariate Kalman Filter')
 		plt.legend(loc=4)
 		plt.grid()

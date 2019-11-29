@@ -32,24 +32,37 @@ class createPoints(object):
         self.move()
         return self.sense_position()
 
+	
+def generateWhiteNoise(n,dt,process_var):
+
+	if not (n == 2 or n == 3 or n == 4):
+		raise ValueError("num_state_var must be between 2 and 4")
+	if n==2:
+		Q = [[.25*dt**4,.5*dt**3],[.5*dt**3,dt**2]]
+	elif n==3:
+		Q = [[.25*dt**4, .5*dt**3, .5*dt**2],
+		[ .5*dt**3,    dt**2,       dt],
+		[ .5*dt**2,       dt,        1]]
+	else:
+		Q = [[(dt**6)/36, (dt**5)/12, (dt**4)/6, (dt**3)/6],
+		[(dt**5)/12, (dt**4)/4,  (dt**3)/2, (dt**2)/2],
+		[(dt**4)/6,  (dt**3)/2,   dt**2,     dt],
+		[(dt**3)/6,  (dt**2)/2 ,  dt,        1.]]
+
+	process_var=scipy.linalg.block_diag(*[Q]*1) * process_var
+
+	return process_var
+
 if __name__=="__main__":
 	state_var=Gaussian([10,4.5],[500,49])
+	num_state_var=len(state_var.mean())
 	dt = 1
 
 	sensor_var = 10
 	process_var = 0.01
-	
-	R_var=10
-	Q_var=0.01
-	count=10
 	pts=createPoints(sensor_var=sensor_var,process_var=process_var)
 
-	Q = [[.25*dt**4,.5*dt**3],[.5*dt**3,dt**2]]
-	process_var=scipy.linalg.block_diag(*[Q]*1) * process_var
-
-	#track, zs = compute_dog_data(R_var, Q_var, count)
-	#print(track)
-	#print(zs)
+	process_var=generateWhiteNoise(num_state_var,dt,process_var)
 	
 	N=20
 	measurements=[]
