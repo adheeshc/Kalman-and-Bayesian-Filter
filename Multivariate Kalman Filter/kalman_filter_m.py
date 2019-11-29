@@ -57,8 +57,12 @@ class Kalman_Filter_multi():
 		S = np.dot(np.dot(self.H, self.P),(self.H.T)) + self.R 	# System Uncertainity
 		K = np.dot(np.dot(self.P, self.H.T),np.linalg.inv(S))	# Kalman Gain
 		y = z - np.dot(self.H, self.x)							# Residual
-		self.x =  self.x + np.dot(K, y)							
-		self.P = self.P - np.dot(np.dot(K, self.H),self.P)		
+		I=np.eye(self.dim_x)
+		self.x =  self.x + np.dot(K, y)		
+		#self.P = self.P - np.dot(np.dot(K, self.H),self.P)
+		
+		self.P = np.dot(np.dot(I-np.dot(K,self.H),self.P),(I-np.dot(K,self.H)).T) + np.dot(np.dot(K,self.R),K.T) #Accounts for floating point errors 
+		# (I-KH)P(I-KH).T + KRK.T
 		return self.x,self.P
 
 	def filter(self):
