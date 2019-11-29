@@ -57,8 +57,8 @@ class Kalman_Filter_multi():
 		S = np.dot(np.dot(self.H, self.P),(self.H.T)) + self.R 	# System Uncertainity
 		K = np.dot(np.dot(self.P, self.H.T),np.linalg.inv(S))	# Kalman Gain
 		y = z - np.dot(self.H, self.x)							# Residual
-		self.x =  self.x + np.dot(K, y)							# posterior
-		self.P = self.P - np.dot(np.dot(K, self.H),self.P)		# posterior variance
+		self.x =  self.x + np.dot(K, y)							
+		self.P = self.P - np.dot(np.dot(K, self.H),self.P)		
 		return self.x,self.P
 
 	def filter(self):
@@ -78,25 +78,50 @@ class Kalman_Filter_multi():
 		return np.array(xs),np.array(covs)
 
 	def toString(self):
-		print(f'  Measurement\t Prediction\t\t Variance\t')
+		dx = np.diff(self.xs[:, 0], axis=0)
+		dx=np.insert(dx,0,self.xs[0,1])
+
+		print(f'  Measurement\t Prediction\t\t Variance\t   Measurement2\t Prediction\t\t Variance\t')
 		for i in range(0,len(self.measurements)):
 			print(f'\t{self.xs[i,0]:6.3f}\t',end='\t')
-			print(f'\t{np.round(self.pos[i],3)}\t\t   {np.round(sqrt(self.covs[i][0,0]),3)}')
+			print(f'\t{np.round(self.pos[i],3):.3f}\t\t   {np.round(sqrt(self.covs[i][0,0]),3):.3f}',end='\t')
+			print(f'\t{dx[i]:6.3f}\t',end='\t')
+			print(f'\t{np.round(self.xs[i,1],3)}\t\t   {np.round(sqrt(self.covs[i][1,1]),3)}')
 
 	def toPlot(self):
 		plt.figure(1)
 		self.plotMeasurements(self.measurements)
 		self.plotFilter()
-		plt.title('Multivariate Kalman Filter')
+		plt.title('State Variable 1')
 		plt.legend(loc=4)
 		plt.grid()
+		
+
+		plt.figure(2)
+		self.plotFilter2()
+		plt.title('State Variable 2')
+		plt.legend(loc=4)
+		plt.grid()
+
+		y_pred1,y_pred2=self.getVariance(self.covs)
+		
+		plt.figure(3)
+		self.plotVariance(y_pred1)
+		plt.title('Variance 1')
+		plt.grid()
+
+		plt.figure(4)
+		self.plotVariance(y_pred2)
+		plt.title('Variance 2')
+		plt.grid()
 		plt.show()
+
 	
 	def plotMeasurements(self,y):
 		x = np.arange(len(y))
 		plt.scatter(x, y, edgecolor='k', facecolor='none',lw=2, label='Measurements')
 
-	def plotFilter(self):
+	def plotFilter(self): #Plots first state variable
 		y=self.xs[:,0]
 		x = np.arange(len(y))
 		
@@ -108,7 +133,38 @@ class Kalman_Filter_multi():
 		std_btm = self.pos - std
 
 		plt.plot(x,y.T, color='C0', label='Filter')
-		plt.plot(x,self.pos,linestyle=':', color='k', lw=2)
+		plt.plot(x,self.pos,linestyle=':', color='k', lw=2, label= 'Original Path')
 		plt.plot(x, std_top, linestyle=':', color='k', lw=1,alpha=0.4)
 		plt.plot(x, std_btm, linestyle=':', color='k', lw=1,alpha=0.4)
 		plt.fill_between(x, std_btm, std_top,facecolor='yellow', alpha=0.2)
+
+	def plotFilter2(self): #plots second state variable
+		dx = np.diff(self.xs[:, 0], axis=0)
+		y=self.xs[:,1]
+		x=np.arange(len(y))
+		plt.scatter(range(1, len(dx) + 1), dx, facecolor='none',edgecolor='k', lw=2, label='Measurement')
+		plt.plot(x,y.T, color='C0', label='Filter')
+
+	def getVariance(self,y):
+		y_pred1=[]
+		y_pred2=[]
+		for i in range(len(y)):
+			y_pred1.append(y[i][0,0])
+			y_pred2.append(y[i][1,1])
+		return y_pred1,y_pred2
+
+	def plotVariance(self,y):
+		x=np.arange(len(y))
+		plt.plot(x,y, color='C0')
+
+
+	def Algorithm(self):
+		print('PREDICT STEP')
+		print('Initial Mean : x_=F*x+B*u')
+		print('Initial Covariance : P_=F*P*F.T + Q')
+		print()
+		print('UPDATE STEP')
+		print('System Uncertainty : S=H*P_*H.T + R')
+		print('Kalman Gain : K=P*H.T*inv(S)')
+		print('Residual : y=z-H*x_')
+		print('Covariance Update : P=(1-K*H)*P_')

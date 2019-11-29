@@ -74,5 +74,5 @@ if __name__=="__main__":
 	pos=np.array(pos)
     
 	kfm=Kalman_Filter_multi(state_var, dt, process_var, sensor_var, measurements,pos)
-	kfm.toString()
+	#kfm.toString()
 	kfm.toPlot()
