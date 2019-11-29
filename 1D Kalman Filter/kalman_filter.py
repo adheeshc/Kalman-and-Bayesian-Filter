@@ -24,7 +24,7 @@ class Gaussian():
 	def variance(self):
 		return self.sigma
 
-	def pdf(self):
+	def pdf(self,x):
 		return (1/sqrt(2*pi*self.sigma))*exp((-(x-self.mu)**2)/(2*self.sigma))
 
 class Kalman_Filter():
