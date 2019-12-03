@@ -20,36 +20,40 @@ class Kalman_Filter_multi():
 	"""
 	'state_variables' are the means and variances of the state variables
 	'dt' is the timestep
+	'state_transition' is the state transition function (see Designing F)
+	'measurement_transition' is the measurement function (see Designing H)
 	'process_var' is the variance in the state variable
 	'sensor_var' is the variance in the sensor readings
 	'measurements' is the final value of the state variable after timestep dt
 	'pos' is the true value of the state variable (without sensor var)
 
 	"""
-	def __init__(self,state_variables,dt,process_var,sensor_var,measurements,pos):
+	def __init__(self,state_variables,dt,state_transition,measurement_transition,control_transition,process_var,sensor_var,measurements,control_input):
 		
 		self.state_variables=state_variables #state variable
-		self.dim_x=len(self.state_variables.mean()) #size of the state vector 
+		self.dim_x=len(self.state_variables.mean()) #Number of state variables 
 		
 		self.x = np.array([i for i in self.state_variables.mean()]).T
 		self.P = np.diag(self.state_variables.variance())
-		
 
 		self.dt=dt #time step in sec
-		self.F=np.array([[1, dt],[0, 1]]) #state transition function (NEEDS T0 BE CHANGED AS REQD)
-		self.H=np.array([[1., 0.]]) #measurement function (NEEDS T0 BE CHANGED AS REQD)
+		self.F=state_transition #state transition function
+		self.H=measurement_transition #measurement function 
 		
+		self.B=control_transition #control input function
+		self.u=control_input #control input
+		self.dim_u=len(control_input) #size of control input
+
 		self.Q=process_var # process covariance (noise)
 		self.R=sensor_var # measurement covariance.
 
 		self.measurements=measurements
-		self.pos=pos
+		self.dim_z=len(measurements) #No of measurement inputs
 
 		self.xs,self.covs=self.filter()
 
-
 	def predict(self):
-		self.x = np.dot(self.F,self.x)
+		self.x = np.dot(self.F,self.x) + np.dot(self.B,self.u)
 		self.P = np.dot(np.dot(self.F,self.P),self.F.T)+self.Q
 		return self.x,self.P
 
@@ -84,64 +88,83 @@ class Kalman_Filter_multi():
 	def toString(self):
 		dx = np.diff(self.xs[:, 0], axis=0)
 		dx=np.insert(dx,0,self.xs[0,1])
+		if self.measurements.shape[1]==1:
+			print(f'  Measurement\t Prediction\t\t Variance\t')
 
-		print(f'  Measurement\t Prediction\t\t Variance\t   Measurement2\t Prediction\t\t Variance\t')
-		for i in range(0,len(self.measurements)):
-			print(f'\t{self.xs[i,0]:6.3f}\t',end='\t')
-			print(f'\t{np.round(self.pos[i],3):.3f}\t\t   {np.round(sqrt(self.covs[i][0,0]),3):.3f}',end='\t')
-			print(f'\t{dx[i]:6.3f}\t',end='\t')
-			print(f'\t{np.round(self.xs[i,1],3)}\t\t   {np.round(sqrt(self.covs[i][1,1]),3)}')
+			for i in range(0,len(self.measurements)):
+				print(f'\t{dx[i]:6.3f}\t',end='\t')
+				print(f'\t{np.round(self.xs[i,1],3):6.3f}\t\t   {np.round(sqrt(self.covs[i][1,1]),3):6.3f}',end='\t')
+		elif self.measurements.shape[1]==2:
+			print(f'  Measurement1\t   Prediction1\t  Variance1\t  Measurement2\t  Prediction2\t  Variance2\t')
+			for i in range(0,len(self.measurements)):
+				print(f'\t{dx[i]:6.3f}\t',end='\t')
+				print(f'\t{np.round(self.xs[i,1],3):6.3f}\t\t   {np.round(sqrt(self.covs[i][1,1]),3):6.3f}',end='\t')
+				print(f'\t{dx[i]:6.3f}\t',end='\t')
+				print(f'\t{np.round(self.xs[i,3],3):6.3f}\t\t   {np.round(sqrt(self.covs[i][3,3]),3):6.3f}')
+		elif self.measurements.shape[1]==3:
+			print(f'  Measurement1\t   Prediction1\t  Variance1\t  Measurement2\t  Prediction2\t  Variance2\t  Measurement3\t  Prediction3\t  Variance3\t')
+			for i in range(0,len(self.measurements)):
+				print(f'\t{dx[i]:6.3f}\t',end='\t')
+				print(f'\t{np.round(self.xs[i,1],3):6.3f}\t\t   {np.round(sqrt(self.covs[i][1,1]),3):6.3f}',end='\t')
+				print(f'\t{dx[i]:6.3f}\t',end='\t')
+				print(f'\t{np.round(self.xs[i,3],3):6.3f}\t\t   {np.round(sqrt(self.covs[i][3,3]),3):6.3f}')
+				print(f'\t{dx[i]:6.3f}\t',end='\t')
+				print(f'\t{np.round(self.xs[i,5],3):6.3f}\t\t   {np.round(sqrt(self.covs[i][5,5]),3):6.3f}')
+
 
 	def toPlot(self):
 		plt.figure(1)
 		self.plotMeasurements(self.measurements)
-		self.plotFilter()
-		plt.title('State Variable 1')
+		self.plotFilter(self.xs)
+		plt.title('Kalman Filter')
 		plt.legend(loc=4)
 		plt.grid()
 		
 
-		plt.figure(2)
-		self.plotFilter2()
-		plt.title('State Variable 2')
-		plt.legend(loc=4)
-		plt.grid()
+		# plt.figure(2)
+		# self.plotFilter2()
+		# plt.title('State Variable 2')
+		# plt.legend(loc=4)
+		# plt.grid()
 
-		y_pred1,y_pred2=self.getVariance(self.covs)
+		# y_pred1,y_pred2=self.getVariance(self.covs)
 		
-		plt.figure(3)
-		self.plotVariance(y_pred1)
-		plt.title('Variance 1')
-		plt.grid()
+		# plt.figure(3)
+		# self.plotVariance(y_pred1)
+		# plt.title('Variance 1')
+		# plt.grid()
 
-		plt.figure(4)
-		self.plotVariance(y_pred2)
-		plt.title('Variance 2')
-		plt.grid()
+		# plt.figure(4)
+		# self.plotVariance(y_pred2)
+		# plt.title('Variance 2')
+		# plt.grid()
 		plt.show()
 
 	
 	def plotMeasurements(self,y):
-		x = np.arange(len(y))
-		plt.scatter(x, y, edgecolor='k', facecolor='none',lw=2, label='Measurements')
+		if y.shape[1]==1:
+			x=np.arange(len(y))
+			plt.scatter(x, y, edgecolor='k', facecolor='none',lw=2, label='Measurements')
+		elif y.shape[1]==2:
+			plt.scatter(y[:,0], y[:,1], edgecolor='k', facecolor='none',lw=2, label='Measurements')
+		elif y.shape[1]==3:
+			plt.scatter(y[:,0], y[:,1], y[:,2], edgecolor='k', facecolor='none',lw=2, label='Measurements')
+		else:
+			print("Shape out of bounds, check plotMeasurements func()")
 
-	def plotFilter(self): #Plots first state variable
-		y=self.xs[:,0]
-		x = np.arange(len(y))
+
+	def plotFilter(self,y): #Plots first state variable
+		if y.shape[1]==2:
+			x = np.arange(len(y))
+			plt.plot(x,y.T, color='C0', label='Filter')
+		elif y.shape[1]==4:
+			plt.plot(y[:,0],y[:,2], color='C0', label='Filter')
+		elif y.shape[1]==6:
+			plt.plot(y[:,0],y[:,2],y[:,4], color='C0', label='Filter')
+		else:
+			print("Shape out of bounds, edit plotFilter func()")
+
 		
-		std = np.sqrt(self.covs[:,0,0])
-		std_top = np.minimum(self.pos+std, [len(self.measurements) + 10])
-		std_btm = np.maximum(self.pos-std, [-50])
-
-		std_top = self.pos + std
-		std_btm = self.pos - std
-
-		plt.plot(x,y.T, color='C0', label='Filter')
-		plt.plot(x,self.pos,linestyle=':', color='k', lw=2, label= 'Original Path')
-		plt.plot(x, std_top, linestyle=':', color='k', lw=1,alpha=0.4)
-		plt.plot(x, std_btm, linestyle=':', color='k', lw=1,alpha=0.4)
-		plt.fill_between(x, std_btm, std_top,facecolor='yellow', alpha=0.2)
-
 	def plotFilter2(self): #plots second state variable
 		dx = np.diff(self.xs[:, 0], axis=0)
 		y=self.xs[:,1]
@@ -160,7 +183,6 @@ class Kalman_Filter_multi():
 	def plotVariance(self,y):
 		x=np.arange(len(y))
 		plt.plot(x,y, color='C0')
-
 
 	def Algorithm(self):
 		print('PREDICT STEP')

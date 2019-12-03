@@ -54,25 +54,28 @@ def generateWhiteNoise(n,dt,process_var):
 	return process_var
 
 if __name__=="__main__":
+	
 	state_var=Gaussian([10,4.5],[500,49])
-	num_state_var=len(state_var.mean())
 	dt = 1
-
 	sensor_var = 10
 	process_var = 0.01
+	
 	pts=createPoints(sensor_var=sensor_var,process_var=process_var)
-
-	process_var=generateWhiteNoise(num_state_var,dt,process_var)
 	
 	N=20
 	measurements=[]
-	pos=[]
+
 	for i in range(0,N):
 		measurements.append(pts.move_and_sense())
-		pos.append(pts.move())
 	measurements=np.array(measurements)
-	pos=np.array(pos)
     
-	kfm=Kalman_Filter_multi(state_var, dt, process_var, sensor_var, measurements,pos)
+	process_var=generateWhiteNoise(len(state_var.mean()),dt,process_var)
+
+	F=np.array([[1, dt],[0, 1]])
+	H=np.array([[1., 0.]])
+	B=[]
+	u=[]
+	#pos=None
+	kfm=Kalman_Filter_multi(state_var, dt, F,H,B,process_var, sensor_var, measurements,u)
 	#kfm.toString()
-	kfm.toPlot()
+	#kfm.toPlot()
