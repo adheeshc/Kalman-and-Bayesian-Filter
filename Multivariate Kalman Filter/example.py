@@ -44,8 +44,6 @@ def generateWhiteNoise(n,dt,process_var):
 
 	return process_var
 
-from filterpy.common import Q_discrete_white_noise
-
 if __name__=="__main__":
 	#Initial Values
 	pos=[4,3]
@@ -87,6 +85,7 @@ if __name__=="__main__":
 	R=np.diag([5,5])
 
 	#CREATING KALMAN FILTER
-	mkf=Kalman_Filter_multi(state_variable,dt,F,H,B,Q,R,ps,u)
-	mkf.toString()
-	mkf.toPlot()
+	mkf=Kalman_Filter_multi(state_variable,F,H,B,Q,R,ps,u)
+	mkf.filter_details()
+	# mkf.toString()
+	# mkf.toPlot()
