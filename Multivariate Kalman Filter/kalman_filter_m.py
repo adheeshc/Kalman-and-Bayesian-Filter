@@ -22,21 +22,20 @@ class Kalman_Filter_multi():
 	'dt' is the timestep
 	'state_transition' is the state transition function (see Designing F)
 	'measurement_transition' is the measurement function (see Designing H)
+	'control_transition' is the control input function (see Designing B)
 	'process_var' is the variance in the state variable
 	'sensor_var' is the variance in the sensor readings
 	'measurements' is the final value of the state variable after timestep dt
-	'pos' is the true value of the state variable (without sensor var)
-
+	'control_input' is the control input
 	"""
-	def __init__(self,state_variables,dt,state_transition,measurement_transition,control_transition,process_var,sensor_var,measurements,control_input):
+	def __init__(self,state_variables,state_transition,measurement_transition,control_transition,process_var,sensor_var,measurements,control_input):
 		
 		self.state_variables=state_variables #state variable
 		self.dim_x=len(self.state_variables.mean()) #Number of state variables 
 		
-		self.x = np.array([i for i in self.state_variables.mean()]).T
-		self.P = np.diag(self.state_variables.variance())
+		self.x = np.array([i for i in self.state_variables.mean()]).T 	#Prior Mean
+		self.P = np.diag(self.state_variables.variance())	#Prior Covariance
 
-		self.dt=dt #time step in sec
 		self.F=state_transition #state transition function
 		self.H=measurement_transition #measurement function 
 		
@@ -114,6 +113,7 @@ class Kalman_Filter_multi():
 
 	def toPlot(self):
 		plt.figure(1)
+		self.measurements=self.measurements.reshape(-1,1)
 		self.plotMeasurements(self.measurements)
 		self.plotFilter(self.xs)
 		plt.title('Kalman Filter')
@@ -154,16 +154,15 @@ class Kalman_Filter_multi():
 
 
 	def plotFilter(self,y): #Plots first state variable
-		if y.shape[1]==2:
-			x = np.arange(len(y))
-			plt.plot(x,y.T, color='C0', label='Filter')
-		elif y.shape[1]==4:
+		x = np.arange(len(y))
+		plt.plot(x,y[:,0], color='C0', label='Filter')
+
+		if y.shape[1]==4:
 			plt.plot(y[:,0],y[:,2], color='C0', label='Filter')
 		elif y.shape[1]==6:
 			plt.plot(y[:,0],y[:,2],y[:,4], color='C0', label='Filter')
-		else:
+		elif y.shape[1]>6:
 			print("Shape out of bounds, edit plotFilter func()")
-
 		
 	def plotFilter2(self): #plots second state variable
 		dx = np.diff(self.xs[:, 0], axis=0)
@@ -171,6 +170,51 @@ class Kalman_Filter_multi():
 		x=np.arange(len(y))
 		plt.scatter(range(1, len(dx) + 1), dx, facecolor='none',edgecolor='k', lw=2, label='Measurement')
 		plt.plot(x,y.T, color='C0', label='Filter')
+
+	def plot_residuals(self,x,stds):
+		if self.dim_x==1:
+			res1 = x[:,0] - self.xs[:,0]
+			plt.plot(res1)
+			plt.title(f'Residuals for State Variable 1 ({stds}\u03C3)')
+			plt.xlabel('time(sec)')
+			self.plot_residual_limits(self.covs.flatten(),stds)
+		elif self.dim_x==2:
+			y_pred1,y_pred2=self.getVariance(self.covs)
+			plt.figure(1)
+			res1 = x[:,0] - self.xs[:,0]
+			plt.plot(res1)
+			plt.title(f'Residuals for State Variable 1 ({stds}\u03C3)')
+			plt.xlabel('time(sec)')
+			self.plot_residual_limits(y_pred1,stds)
+			plt.figure(2)
+			res2 = x[:,1] - self.xs[:,1]
+			plt.plot(res2)
+			plt.title(f'Residuals for State Variable 2 ({stds}\u03C3)')
+			plt.xlabel('time(sec)')
+			self.plot_residual_limits(y_pred2,stds)
+		elif self.dim_x==3:
+			y_pred1,y_pred2=self.getVariance(self.covs)
+			plt.figure(1)
+			res1 = x[:,0] - self.xs[:,0]
+			plt.plot(res1)
+			plt.title(f'Residuals for State Variable 1 ({stds}\u03C3)')
+			plt.xlabel('time(sec)')
+			self.plot_residual_limits(y_pred1,stds)
+			plt.figure(2)
+			res2 = x[:,1] - self.xs[:,1]
+			plt.plot(res2)
+			plt.title(f'Residuals for State Variable 2 ({stds}\u03C3)')
+			plt.xlabel('time(sec)')
+			self.plot_residual_limits(y_pred2,stds)
+		else:
+			print("Shape out of bounds, edit plot_residuals func()")
+		plt.show()
+
+	def plot_residual_limits(self,Ps, stds): #plots standand deviation given in Ps 
+	    std = np.sqrt(np.abs(Ps)) * stds
+	    plt.plot(-std, color='k', ls=':', lw=2)
+	    plt.plot(std, color='k', ls=':', lw=2)
+	    plt.fill_between(range(len(std)), -std, std,facecolor='#ffff00', alpha=0.3)
 
 	def getVariance(self,y):
 		y_pred1=[]
@@ -194,3 +238,24 @@ class Kalman_Filter_multi():
 		print('Kalman Gain : K=P*H.T*inv(S)')
 		print('Residual : y=z-H*x_')
 		print('Covariance Update : P=(1-K*H)*P_')
+
+	def filter_details(self):
+		print(f'number of state variables: {self.dim_x}')
+		print(f'post means: {self.x}')
+		print(f'post covariance: \n{self.P}\n')
+
+		print(f'state transition function: \n{self.F}')
+		print(f'measurement transition function: \n{self.H}\n')
+
+		print(f'control input function: \n{self.B}')
+		print(f'control input: {self.u}')
+		print(f'size of control input: {self.dim_u}\n')
+
+		print(f'process covariance (noise) : \n{self.Q}')
+		print(f'sensor variance (sensor noise): \n{self.R}\n')
+
+		print(f'number of measurements: {self.dim_z}\n')
+		print(f'measurements:\n {self.measurements}')
+		
+		
+		
