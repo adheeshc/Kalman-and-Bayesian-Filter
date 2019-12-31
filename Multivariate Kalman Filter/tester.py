@@ -76,6 +76,7 @@ if __name__=="__main__":
 	B=[]
 	u=[]
 	#pos=None
-	kfm=Kalman_Filter_multi(state_var, dt, F,H,B,process_var, sensor_var, measurements,u)
+	kfm=Kalman_Filter_multi(state_var, F,H,B,process_var, sensor_var, measurements,u)
+	kfm.filter_details()
 	#kfm.toString()
 	#kfm.toPlot()
