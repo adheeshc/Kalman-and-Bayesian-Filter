@@ -41,7 +41,7 @@ class Kalman_Filter_multi():
 		
 		self.B=control_transition #control input function
 		self.u=control_input #control input
-		self.dim_u=len(control_input) #size of control input
+		self.dim_u=len(control_transition) #size of control input
 
 		self.Q=process_var # process covariance (noise)
 		self.R=sensor_var # measurement covariance.
@@ -58,7 +58,7 @@ class Kalman_Filter_multi():
 		self.xs,self.covs=self.filter()
 
 	def predict(self):
-		self.x = np.dot(self.F,self.x) + np.dot(self.B,self.u)
+		self.x = np.dot(self.F,self.x)+np.dot(self.B,self.u)
 		self.P = np.dot(np.dot(self.F,self.P),self.F.T)+self.Q
 		return self.x,self.P
 
@@ -72,7 +72,8 @@ class Kalman_Filter_multi():
 		self.x =  self.x + np.dot(self.K, self.y)		
 		#self.P = self.P - np.dot(np.dot(K, self.H),self.P)
 		
-		self.P = np.dot(np.dot(I-np.dot(self.K,self.H),self.P),(I-np.dot(self.K,self.H)).T) + np.dot(np.dot(self.K,self.R),self.K.T) #Accounts for floating point errors 
+		self.P = np.dot(np.dot(I-np.dot(self.K,self.H),self.P),(I-np.dot(self.K,self.H)).T) + np.dot(np.dot(self.K,self.R),self.K.T) 
+		#Accounts for floating point errors 
 		# (I-KH)P(I-KH).T + KRK.T
 		return self.x,self.P
 
@@ -162,6 +163,7 @@ class Kalman_Filter_multi():
 
 
 	def plotFilter(self,y): #Plots first state variable
+
 		x = np.arange(len(y))
 		plt.plot(x,y[:,0], color='C0', label='Filter')
 
