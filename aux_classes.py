@@ -68,3 +68,15 @@ def generateWhiteNoise(n,dt,process_var):
 	process_var=block_diag(*[Q]*1) * process_var
 
 	return process_var
+
+class Gaussian:
+    def __init__(self,mu,var):
+        self.mu=mu
+        self.var=var
+
+    def mean(self):
+        return self.mu
+
+    def variance(self):
+        return self.var
+
