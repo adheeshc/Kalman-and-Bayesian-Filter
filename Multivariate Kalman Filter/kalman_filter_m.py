@@ -33,7 +33,7 @@ class Kalman_Filter_multi():
 		self.state_variables=state_variables #state variable
 		self.dim_x=len(self.state_variables.mean()) #Number of state variables 
 		
-		self.x = np.array([i for i in self.state_variables.mean()]).T 	#Prior Mean
+		self.x = np.array([i for i in self.state_variables.mean()]).T 	#State
 		self.P = np.diag(self.state_variables.variance())	#Prior Covariance
 
 		self.F=state_transition #state transition function
@@ -49,6 +49,12 @@ class Kalman_Filter_multi():
 		self.measurements=measurements
 		self.dim_z=len(measurements) #No of measurement inputs
 
+		self.S=np.zeros((self.dim_z, self.dim_z))
+		self.K=np.zeros((self.dim_x, self.dim_z))
+		self.y=np.zeros((self.dim_z, 1))
+
+		self.ss=[]
+		self.yy=[]
 		self.xs,self.covs=self.filter()
 
 	def predict(self):
@@ -57,14 +63,16 @@ class Kalman_Filter_multi():
 		return self.x,self.P
 
 	def update(self,z):
-		S = np.dot(np.dot(self.H, self.P),(self.H.T)) + self.R 	# System Uncertainity
-		K = np.dot(np.dot(self.P, self.H.T),np.linalg.inv(S))	# Kalman Gain
-		y = z - np.dot(self.H, self.x)							# Residual
+		self.S = np.dot(np.dot(self.H, self.P),(self.H.T)) + self.R 	# System Uncertainity
+		self.K = np.dot(np.dot(self.P, self.H.T),np.linalg.inv(self.S))	# Kalman Gain
+		self.y = z - np.dot(self.H, self.x)								# Residual
+		self.ss.append(self.S)
+		self.yy.append(self.y)
 		I=np.eye(self.dim_x)
-		self.x =  self.x + np.dot(K, y)		
+		self.x =  self.x + np.dot(self.K, self.y)		
 		#self.P = self.P - np.dot(np.dot(K, self.H),self.P)
 		
-		self.P = np.dot(np.dot(I-np.dot(K,self.H),self.P),(I-np.dot(K,self.H)).T) + np.dot(np.dot(K,self.R),K.T) #Accounts for floating point errors 
+		self.P = np.dot(np.dot(I-np.dot(self.K,self.H),self.P),(I-np.dot(self.K,self.H)).T) + np.dot(np.dot(self.K,self.R),self.K.T) #Accounts for floating point errors 
 		# (I-KH)P(I-KH).T + KRK.T
 		return self.x,self.P
 
@@ -171,7 +179,7 @@ class Kalman_Filter_multi():
 		plt.scatter(range(1, len(dx) + 1), dx, facecolor='none',edgecolor='k', lw=2, label='Measurement')
 		plt.plot(x,y.T, color='C0', label='Filter')
 
-	def plot_residuals(self,x,stds):
+	def plotResiduals(self,x,stds):
 		if self.dim_x==1:
 			res1 = x[:,0] - self.xs[:,0]
 			plt.plot(res1)
@@ -240,6 +248,7 @@ class Kalman_Filter_multi():
 		print('Covariance Update : P=(1-K*H)*P_')
 
 	def filter_details(self):
+
 		print(f'number of state variables: {self.dim_x}')
 		print(f'post means: {self.x}')
 		print(f'post covariance: \n{self.P}\n')
@@ -257,5 +266,8 @@ class Kalman_Filter_multi():
 		print(f'number of measurements: {self.dim_z}\n')
 		print(f'measurements:\n {self.measurements}')
 		
-		
-		
+	def out(self,doPrint=False):
+		if doPrint:
+			print(f'output readings are: \n{self.xs}\n')
+			print(f'output covariances are: \n{self.covs}\n')
+		return (self.xs,self.covs)
