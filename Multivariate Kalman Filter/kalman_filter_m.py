@@ -33,15 +33,14 @@ class Kalman_Filter_multi():
 		self.state_variables=state_variables #state variable
 		self.dim_x=len(self.state_variables.mean()) #Number of state variables 
 		
-		self.x = np.array([i for i in self.state_variables.mean()]).T 	#State
+		self.x = np.array([i for i in self.state_variables.mean()]).T #State
 		self.P = np.diag(self.state_variables.variance())	#Prior Covariance
-
 		self.F=state_transition #state transition function
 		self.H=measurement_transition #measurement function 
 		
 		self.B=control_transition #control input function
 		self.u=control_input #control input
-		self.dim_u=len(control_transition) #size of control input
+		self.dim_u=len(control_input) #size of control input
 
 		self.Q=process_var # process covariance (noise)
 		self.R=sensor_var # measurement covariance.
@@ -252,8 +251,8 @@ class Kalman_Filter_multi():
 	def filter_details(self):
 
 		print(f'number of state variables: {self.dim_x}')
-		print(f'post means: {self.x}')
-		print(f'post covariance: \n{self.P}\n')
+		print(f'Means: {self.x}')
+		print(f'Covariance: \n{self.P}\n')
 
 		print(f'state transition function: \n{self.F}')
 		print(f'measurement transition function: \n{self.H}\n')

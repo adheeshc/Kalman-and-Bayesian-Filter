@@ -29,5 +29,6 @@ if __name__=="__main__":
     #xs,zs=simulate_vel_system(Q,count=80)
     zs = np.array([i + np.random.randn()*R for i in range(1, 100)])
     kf2=FirstOrderKF(R,Q,dt,zs,B,u,P)
-    kf2.toPlot()
+    kf2.filter_details()
+    #kf2.toPlot()
     #kf2.plotResiduals(xs, 3)
