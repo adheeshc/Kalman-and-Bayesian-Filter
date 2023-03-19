@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.ndimage.filters import convolve
+from scipy.ndimage import convolve
 import random
 np.set_printoptions(precision=2, suppress=True, linewidth=60)
 random.seed(5)

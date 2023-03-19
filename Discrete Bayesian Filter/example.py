@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from discrete_bayes_filter import Discrete_Bayes_Filter
 import random
-from scipy.ndimage.filters import convolve
+from scipy.ndimage import convolve
 np.set_printoptions(precision=2, suppress=True, linewidth=60)
 random.seed(5)
 

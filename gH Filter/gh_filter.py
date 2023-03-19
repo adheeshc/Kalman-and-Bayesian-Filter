@@ -14,29 +14,29 @@ class gH_filter:
 	'plot' boolean variable that turns plotting results on/off
 	"""
 
-	def __init__(self,data,x0,dx,g,h,dt,plot=False):
-		self.data=data
-		self.x0=x0
-		self.dx=dx
-		self.g=g
-		self.h=h
-		self.dt=dt
-		self.results=self.filter()
+	def __init__(self, data, x0, dx, g, h, dt, plot=False):
+		self.data = data
+		self.x0 = x0
+		self.dx = dx
+		self.g = g
+		self.h = h
+		self.dt = dt
+		self.results = self.filter()
 		if plot:
 			self.plotResults()
 
 	def filter(self):
-		results=[]
-		x_est=self.x0
+		results = []
+		x_est = self.x0
 		for z in self.data:
 			#prediction
-			x_pred=x_est+(self.dx*self.dt)
-			self.dx=self.dx
+			x_pred = x_est + (self.dx * self.dt)
+			self.dx = self.dx
 
 			#update
 			residual = z - x_pred
-			self.dx+=self.h*(residual)/self.dt
-			x_est=x_pred+self.g*residual
+			self.dx += self.h*(residual) / self.dt
+			x_est = x_pred + self.g * residual
 			results.append(x_est)
 		return np.array(results)
 
@@ -45,15 +45,15 @@ class gH_filter:
 
 
 	def plotResults(self):
-		if type(self.data)==list:
-			size=len(self.data)
-		elif type(self.data)==np.ndarray:
-			size=self.data.shape[0]
-		x=np.linspace(1,size,size)
-		y=np.linspace(self.x0,self.results[-1],size)
-		plt.scatter(x,self.data,label='Measurements')
-		plt.plot(x,self.results,'r-',label='Estimate')
-		#plt.plot(x,y,'k--',label='Actual')
+		if type(self.data) == list:
+			size = len(self.data)
+		elif type(self.data) == np.ndarray:
+			size = self.data.shape[0]
+		x = np.linspace(1, size, size)
+		y = np.linspace(self.x0, self.results[-1], size)
+		plt.scatter(x, self.data, label='Measurements')
+		plt.plot(x, self.results, 'r-', label='Estimate')
+		# plt.plot(x,y,'k--',label='Actual')
 		plt.grid()
 		plt.title('GH Filter')
 		plt.legend(loc=4)

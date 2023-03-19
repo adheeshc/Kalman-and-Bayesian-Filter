@@ -13,12 +13,12 @@ def computeNewPosition(pos, vel, dt=1):
 	return pos + (vel * dt)
 
 def measurePosition(pos):
-	return pos + np.random.randn()*500
+	return pos + np.random.randn() * 500
 
 def genData(pos,vel,count):
 	zs=[]
 	for i in range(0,count):
-		pos=computeNewPosition(pos,vel)
+		pos=computeNewPosition(pos, vel)
 		vel += 0.2
 		zs.append(measurePosition(pos))
 	return np.array(zs)
@@ -32,9 +32,9 @@ def plotData(zs):
 	plt.show()
 
 def main():
-	pos=23*1000
+	pos=23 * 1000
 	vel=15
-	zs=genData(pos,vel,100)
+	zs=genData(pos, vel, 100)
 	#plotData(zs)
 	dx=15
 	
@@ -45,11 +45,11 @@ def main():
 
 
 	"""
-	g=0.01
-	h=0.001
-	dt=1
+	g = 0.01
+	h = 0.0001
+	dt = 1
 
-	filt=gH_filter(zs,pos,dx,g,h,dt,plot=True)
+	filt = gH_filter(zs,pos,dx,g,h,dt,plot=True)
 
 
 if __name__=="__main__":
